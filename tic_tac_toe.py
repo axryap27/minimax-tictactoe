@@ -4,6 +4,7 @@
 # Global variables (I know global variables are bad but it's easier for now)
 board = [[" " for x in range(3)] for x in range(3)]  # 3x3 board
 current_player = "X"  # X goes first
+game_mode = ""  # Will store "1" for two players or "2" for computer
 
 def print_board():
     # Print the board in a nice format
@@ -45,7 +46,14 @@ def get_move():
     # Get player move
     while True:
         try:
-            move = int(input(f"Player {current_player}, enter your move (1-9): "))
+            move = input(f"Player {current_player}, enter your move (1-9) or 'q' to quit: ")
+            
+            # Check for quit
+            if move.lower() == 'q':
+                print("\nThanks for playing! Goodbye! 👋")
+                exit()
+            
+            move = int(move)
             if move < 1 or move > 9:
                 print("Please enter a number between 1 and 9!")
                 continue
@@ -62,13 +70,33 @@ def get_move():
             return row, col
             
         except ValueError:
-            print("Please enter a valid number!")
+            print("Please enter a valid number or 'q' to quit!")
+
+def computer_move():
+    # TODO: Implement computer's move logic
+    # For now, just print a message
+    print("Computer is thinking...")
+    # This is where you'll implement the computer's strategy
+    pass
 
 def main():
-    global current_player  # Need to use global variable
+    global current_player, game_mode  # Need to use global variables
     
     print("Welcome to Tic Tac Toe!")
-    print("Positions are numbered like this:")
+    print("Choose game mode:")
+    print("1. Two Players")
+    print("2. Play against Computer")
+    
+    while True:
+        try:
+            game_mode = input("Enter 1 or 2: ")
+            if game_mode in ["1", "2"]:
+                break
+            print("Please enter 1 or 2!")
+        except:
+            print("Invalid input! Please enter 1 or 2.")
+    
+    print("\nPositions are numbered like this:")
     print(" 1 | 2 | 3 ")
     print("-----------")
     print(" 4 | 5 | 6 ")
@@ -79,8 +107,15 @@ def main():
     while True:
         print_board()
         
-        # Get player move
-        row, col = get_move()
+        # Get move based on game mode
+        if game_mode == "1" or current_player == "X":
+            # Human player's turn
+            row, col = get_move()
+        else:
+            # Computer's turn
+            computer_move()
+            # TODO: Replace this with actual computer move
+            row, col = get_move()  # Temporary: using human input for computer
         
         # Make move
         board[row][col] = current_player
@@ -88,7 +123,10 @@ def main():
         # Check for winner
         if check_winner():
             print_board()
-            print(f"Player {current_player} wins! 🎉")
+            if game_mode == "2" and current_player == "O":
+                print("Computer wins! 😢")
+            else:
+                print(f"Player {current_player} wins! 🎉")
             break
         
         # Check for tie
