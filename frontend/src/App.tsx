@@ -130,8 +130,10 @@ function App() {
     setCurrentPlayer("X");
     setWinner(null);
     setGameStarted(false);
-    // Show symbol selector after each game in PvC mode
+    // Reset player's symbol choice and show symbol selector after each game in PvC mode
     if (gameMode === "pvc") {
+      setPlayerSymbol("X");
+      setComputerSymbol("O");
       setShowSymbolSelector(true);
     }
   };
