@@ -152,8 +152,23 @@ def get_move():
         except ValueError:
             print("Please enter a valid number or 'q' to quit!")
 
+def select_symbol():
+    while True:
+        try:
+            symbol = input("Choose your symbol (X or O): ").upper()
+            if symbol in ["X", "O"]:
+                return symbol
+            print("Please enter X or O!")
+        except:
+            print("Invalid input! Please enter X or O.")
+
+def reset_game():
+    global board, current_player, winner
+    board = [[" " for x in range(3)] for x in range(3)]
+    current_player = "X"  # X always goes first
+
 def main():
-    global current_player, game_mode, player_symbol, computer_symbol  # Need to use global variables
+    global current_player, game_mode, player_symbol, computer_symbol
     
     print("Welcome to Tic Tac Toe!")
     print("Choose game mode:")
@@ -171,17 +186,8 @@ def main():
     
     # If playing against computer, let player choose their symbol
     if game_mode == "2":
-        while True:
-            try:
-                symbol = input("Choose your symbol (X or O): ").upper()
-                if symbol in ["X", "O"]:
-                    player_symbol = symbol
-                    computer_symbol = "O" if symbol == "X" else "X"
-                    current_player = "X"  # X always goes first
-                    break
-                print("Please enter X or O!")
-            except:
-                print("Invalid input! Please enter X or O.")
+        player_symbol = select_symbol()
+        computer_symbol = "O" if player_symbol == "X" else "X"
     
     print("\nPositions are numbered like this:")
     print(" 1 | 2 | 3 ")
@@ -213,13 +219,59 @@ def main():
                 print("Computer wins! 😢")
             else:
                 print(f"Player {current_player} wins! 🎉")
-            break
+            
+            # If playing against computer, ask to play again
+            if game_mode == "2":
+                print("\nPlay again? (y/n)")
+                while True:
+                    try:
+                        play_again = input().lower()
+                        if play_again in ["y", "n"]:
+                            break
+                        print("Please enter y or n!")
+                    except:
+                        print("Invalid input! Please enter y or n!")
+                
+                if play_again == "y":
+                    # Let player choose symbol again
+                    player_symbol = select_symbol()
+                    computer_symbol = "O" if player_symbol == "X" else "X"
+                    reset_game()
+                    continue
+                else:
+                    print("\nThanks for playing! Goodbye! 👋")
+                    break
+            else:
+                break
         
         # Check for tie
         if is_board_full():
             print_board()
             print("It's a tie! 😕")
-            break
+            
+            # If playing against computer, ask to play again
+            if game_mode == "2":
+                print("\nPlay again? (y/n)")
+                while True:
+                    try:
+                        play_again = input().lower()
+                        if play_again in ["y", "n"]:
+                            break
+                        print("Please enter y or n!")
+                    except:
+                        print("Invalid input! Please enter y or n!")
+                
+                if play_again == "y":
+                    # Let player choose symbol again
+                    player_symbol = select_symbol()
+                    computer_symbol = "O" if player_symbol == "X" else "X"
+                    reset_game()
+                    continue
+                else:
+                    print("\nThanks for playing! Goodbye! 👋")
+                    break
+            else:
+                break
         
         # Switch players
         if current_player == "X":
