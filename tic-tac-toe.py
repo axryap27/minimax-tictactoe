@@ -6,6 +6,8 @@ import random
 board = [[" " for x in range(3)] for x in range(3)]  # 3x3 board
 current_player = "X"  # X goes first
 game_mode = ""  # Will store "1" for two players or "2" for computer
+player_symbol = "X"  # Will store player's chosen symbol
+computer_symbol = "O"  # Will store computer's symbol
 
 def print_board():
     # Print the board in a nice format
@@ -65,24 +67,24 @@ def computer_move():
         for i in range(3):
             # Check rows
             row = board[i]
-            win_pos = check_line(row, "O")
+            win_pos = check_line(row, computer_symbol)
             if win_pos != -1:
                 return i, win_pos
             
             # Check columns
             col = [board[j][i] for j in range(3)]
-            win_pos = check_line(col, "O")
+            win_pos = check_line(col, computer_symbol)
             if win_pos != -1:
                 return win_pos, i
         
         # Check diagonals
         diag1 = [board[i][i] for i in range(3)]
-        win_pos = check_line(diag1, "O")
+        win_pos = check_line(diag1, computer_symbol)
         if win_pos != -1:
             return win_pos, win_pos
         
         diag2 = [board[i][2-i] for i in range(3)]
-        win_pos = check_line(diag2, "O")
+        win_pos = check_line(diag2, computer_symbol)
         if win_pos != -1:
             return win_pos, 2-win_pos
         
@@ -90,24 +92,24 @@ def computer_move():
         for i in range(3):
             # Check rows
             row = board[i]
-            block_pos = check_line(row, "X")
+            block_pos = check_line(row, player_symbol)
             if block_pos != -1:
                 return i, block_pos
             
             # Check columns
             col = [board[j][i] for j in range(3)]
-            block_pos = check_line(col, "X")
+            block_pos = check_line(col, player_symbol)
             if block_pos != -1:
                 return block_pos, i
         
         # Check diagonals for blocking
         diag1 = [board[i][i] for i in range(3)]
-        block_pos = check_line(diag1, "X")
+        block_pos = check_line(diag1, player_symbol)
         if block_pos != -1:
             return block_pos, block_pos
         
         diag2 = [board[i][2-i] for i in range(3)]
-        block_pos = check_line(diag2, "X")
+        block_pos = check_line(diag2, player_symbol)
         if block_pos != -1:
             return block_pos, 2-block_pos
         
@@ -151,7 +153,7 @@ def get_move():
             print("Please enter a valid number or 'q' to quit!")
 
 def main():
-    global current_player, game_mode  # Need to use global variables
+    global current_player, game_mode, player_symbol, computer_symbol  # Need to use global variables
     
     print("Welcome to Tic Tac Toe!")
     print("Choose game mode:")
@@ -167,6 +169,20 @@ def main():
         except:
             print("Invalid input! Please enter 1 or 2.")
     
+    # If playing against computer, let player choose their symbol
+    if game_mode == "2":
+        while True:
+            try:
+                symbol = input("Choose your symbol (X or O): ").upper()
+                if symbol in ["X", "O"]:
+                    player_symbol = symbol
+                    computer_symbol = "O" if symbol == "X" else "X"
+                    current_player = "X"  # X always goes first
+                    break
+                print("Please enter X or O!")
+            except:
+                print("Invalid input! Please enter X or O.")
+    
     print("\nPositions are numbered like this:")
     print(" 1 | 2 | 3 ")
     print("-----------")
@@ -179,7 +195,7 @@ def main():
         print_board()
         
         # Get move based on game mode
-        if game_mode == "1" or current_player == "X":
+        if game_mode == "1" or current_player == player_symbol:
             # Human player's turn
             row, col = get_move()
         else:
@@ -193,7 +209,7 @@ def main():
         # Check for winner
         if check_winner():
             print_board()
-            if game_mode == "2" and current_player == "O":
+            if game_mode == "2" and current_player == computer_symbol:
                 print("Computer wins! 😢")
             else:
                 print(f"Player {current_player} wins! 🎉")
