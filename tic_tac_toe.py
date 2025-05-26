@@ -42,6 +42,93 @@ def is_board_full():
                 return False
     return True
 
+def get_empty_spots():
+    # Returns list of empty spots as (row, col) tuples
+    empty_spots = []
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == " ":
+                empty_spots.append((i, j))
+    return empty_spots
+
+def check_line(line, player):
+    # Check if a line (row, column, or diagonal) has two of player's marks and one empty
+    if line.count(player) == 2 and line.count(" ") == 1:
+        return line.index(" ")
+    return -1
+
+def computer_move():
+    # First, check if computer can win
+    for i in range(3):
+        # Check rows
+        row = board[i]
+        win_pos = check_line(row, "O")
+        if win_pos != -1:
+            return i, win_pos
+        
+        # Check columns
+        col = [board[j][i] for j in range(3)]
+        win_pos = check_line(col, "O")
+        if win_pos != -1:
+            return win_pos, i
+    
+    # Check diagonals
+    diag1 = [board[i][i] for i in range(3)]
+    win_pos = check_line(diag1, "O")
+    if win_pos != -1:
+        return win_pos, win_pos
+    
+    diag2 = [board[i][2-i] for i in range(3)]
+    win_pos = check_line(diag2, "O")
+    if win_pos != -1:
+        return win_pos, 2-win_pos
+    
+    # Then, check if need to block player
+    for i in range(3):
+        # Check rows
+        row = board[i]
+        block_pos = check_line(row, "X")
+        if block_pos != -1:
+            return i, block_pos
+        
+        # Check columns
+        col = [board[j][i] for j in range(3)]
+        block_pos = check_line(col, "X")
+        if block_pos != -1:
+            return block_pos, i
+    
+    # Check diagonals for blocking
+    diag1 = [board[i][i] for i in range(3)]
+    block_pos = check_line(diag1, "X")
+    if block_pos != -1:
+        return block_pos, block_pos
+    
+    diag2 = [board[i][2-i] for i in range(3)]
+    block_pos = check_line(diag2, "X")
+    if block_pos != -1:
+        return block_pos, 2-block_pos
+    
+    # If center is empty, take it
+    if board[1][1] == " ":
+        return 1, 1
+    
+    # Take any empty corner
+    corners = [(0,0), (0,2), (2,0), (2,2)]
+    for corner in corners:
+        if board[corner[0]][corner[1]] == " ":
+            return corner
+    
+    # Take any empty side
+    sides = [(0,1), (1,0), (1,2), (2,1)]
+    for side in sides:
+        if board[side[0]][side[1]] == " ":
+            return side
+    
+    # If all else fails, take any empty spot
+    empty_spots = get_empty_spots()
+    if empty_spots:
+        return empty_spots[0]
+
 def get_move():
     # Get player move
     while True:
@@ -71,13 +158,6 @@ def get_move():
             
         except ValueError:
             print("Please enter a valid number or 'q' to quit!")
-
-def computer_move():
-    # TODO: Implement computer's move logic
-    # For now, just print a message
-    print("Computer is thinking...")
-    # This is where you'll implement the computer's strategy
-    pass
 
 def main():
     global current_player, game_mode  # Need to use global variables
@@ -113,9 +193,8 @@ def main():
             row, col = get_move()
         else:
             # Computer's turn
-            computer_move()
-            # TODO: Replace this with actual computer move
-            row, col = get_move()  # Temporary: using human input for computer
+            print("Computer is thinking...")
+            row, col = computer_move()
         
         # Make move
         board[row][col] = current_player
