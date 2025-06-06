@@ -64,28 +64,74 @@ function App() {
     return null;
   };
 
-  const getComputerMove = (squares: Array<Player | null>): number => {
-    // 70% chance to make a strategic move
-    if (Math.random() < 0.7) {
-      // Try to win
-      const winningMove = findWinningMove(squares, computerSymbol);
-      if (winningMove !== null) return winningMove;
+  const minimax = (
+    squares: Array<Player | null>,
+    depth: number,
+    isMaximizing: boolean,
+    alpha: number,
+    beta: number
+  ): number => {
+    const winner = calculateWinner(squares);
+    if (winner === computerSymbol) return 10 - depth;
+    if (winner === playerSymbol) return depth - 10;
+    if (!squares.includes(null)) return 0;
 
-      // Block player's winning move
-      const blockingMove = findWinningMove(squares, playerSymbol);
-      if (blockingMove !== null) return blockingMove;
-
-      // Take center if available
-      if (squares[4] === null) return 4;
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < squares.length; i++) {
+        if (squares[i] === null) {
+          squares[i] = computerSymbol;
+          const score = minimax(squares, depth + 1, false, alpha, beta);
+          squares[i] = null;
+          bestScore = Math.max(score, bestScore);
+          alpha = Math.max(alpha, bestScore);
+          if (beta <= alpha) break;
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < squares.length; i++) {
+        if (squares[i] === null) {
+          squares[i] = playerSymbol;
+          const score = minimax(squares, depth + 1, true, alpha, beta);
+          squares[i] = null;
+          bestScore = Math.min(score, bestScore);
+          beta = Math.min(beta, bestScore);
+          if (beta <= alpha) break;
+        }
+      }
+      return bestScore;
     }
+  };
 
-    // 30% chance to make a random move, or if no strategic move was found
+  const getComputerMove = (squares: Array<Player | null>): number => {
+    // Try to win
+    const winningMove = findWinningMove(squares, computerSymbol);
+    if (winningMove !== null) return winningMove;
+
+    // Block player's winning move
+    const blockingMove = findWinningMove(squares, playerSymbol);
+    if (blockingMove !== null) return blockingMove;
+
+    // Use minimax to find the best move
+    let bestScore = -Infinity;
+    let bestMove = -1;
     const availableMoves = squares
       .map((square, index) => (square === null ? index : null))
       .filter((index): index is number => index !== null);
 
-    const randomIndex = Math.floor(Math.random() * availableMoves.length);
-    return availableMoves[randomIndex];
+    for (const move of availableMoves) {
+      squares[move] = computerSymbol;
+      const score = minimax(squares, 0, false, -Infinity, Infinity);
+      squares[move] = null;
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = move;
+      }
+    }
+
+    return bestMove;
   };
 
   const makeComputerMove = () => {
