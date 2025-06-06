@@ -8,6 +8,7 @@ current_player = "X"  # X goes first
 game_mode = ""  # Will store "1" for two players or "2" for computer
 player_symbol = "X"  # Will store player's chosen symbol
 computer_symbol = "O"  # Will store computer's symbol
+difficulty = "medium"  # Will store "easy", "medium", or "hard"
 
 def print_board():
     # Print the board in a nice format
@@ -60,8 +61,68 @@ def check_line(line, player):
         return line.index(" ")
     return -1
 
+def evaluate_board():
+    # Evaluate the board for minimax
+    # Returns 10 if computer wins, -10 if player wins, 0 for tie
+    if check_winner():
+        if current_player == computer_symbol:
+            return 10
+        else:
+            return -10
+    return 0
+
+def minimax(depth, is_maximizing):
+    # Minimax algorithm implementation
+    score = evaluate_board()
+    
+    # If game is over, return the score
+    # Does not use ties since this is ideal steadystate for tictactoe
+    if score != 0:
+        return score
+    
+    # If board is full, it's a tie
+    if is_board_full():
+        return 0
+    
+    if is_maximizing:
+        best_score = float('-inf')
+        for i, j in get_empty_spots():
+            board[i][j] = computer_symbol
+            score = minimax(depth + 1, False)
+            board[i][j] = " "
+            best_score = max(score, best_score)
+        return best_score
+    else:
+        best_score = float('inf')
+        for i, j in get_empty_spots():
+            board[i][j] = player_symbol
+            score = minimax(depth + 1, True)
+            board[i][j] = " "
+            best_score = min(score, best_score)
+        return best_score
+
+def get_best_move():
+    # Find the best move using minimax
+    best_score = float('-inf')
+    best_move = None
+    
+    for i, j in get_empty_spots():
+        board[i][j] = computer_symbol
+        score = minimax(0, False)
+        board[i][j] = " "
+        
+        if score > best_score:
+            best_score = score
+            best_move = (i, j)
+    
+    return best_move
+
 def computer_move():
-    # 70% chance to make a strategic move
+    if difficulty == "hard":
+        # Use minimax for hard difficulty
+        return get_best_move()
+    
+    # Medium difficulty logic (70% strategic, 30% random)
     if random.random() < 0.7:
         # First, check if computer can win
         for i in range(3):
@@ -162,13 +223,31 @@ def select_symbol():
         except:
             print("Invalid input! Please enter X or O.")
 
+def select_difficulty():
+    while True:
+        try:
+            print("\nSelect difficulty level:")
+            print("1. Easy (Random moves)")
+            print("2. Medium (70% strategic, 30% random)")
+            print("3. Hard (Unbeatable)")
+            diff = input("Enter 1, 2, or 3: ")
+            if diff == "1":
+                return "easy"
+            elif diff == "2":
+                return "medium"
+            elif diff == "3":
+                return "hard"
+            print("Please enter 1, 2, or 3!")
+        except:
+            print("Invalid input! Please enter 1, 2, or 3!")
+
 def reset_game():
     global board, current_player, winner
     board = [[" " for x in range(3)] for x in range(3)]
     current_player = "X"  # X always goes first
 
 def main():
-    global current_player, game_mode, player_symbol, computer_symbol
+    global current_player, game_mode, player_symbol, computer_symbol, difficulty
     
     print("Welcome to Tic Tac Toe!")
     print("Choose game mode:")
@@ -184,10 +263,11 @@ def main():
         except:
             print("Invalid input! Please enter 1 or 2.")
     
-    # If playing against computer, let player choose their symbol
+    # If playing against computer, let player choose their symbol and difficulty
     if game_mode == "2":
         player_symbol = select_symbol()
         computer_symbol = "O" if player_symbol == "X" else "X"
+        difficulty = select_difficulty()
     
     print("\nPositions are numbered like this:")
     print(" 1 | 2 | 3 ")
@@ -233,9 +313,10 @@ def main():
                         print("Invalid input! Please enter y or n!")
                 
                 if play_again == "y":
-                    # Let player choose symbol again
+                    # Let player choose symbol and difficulty again
                     player_symbol = select_symbol()
                     computer_symbol = "O" if player_symbol == "X" else "X"
+                    difficulty = select_difficulty()
                     reset_game()
                     continue
                 else:
@@ -262,9 +343,10 @@ def main():
                         print("Invalid input! Please enter y or n!")
                 
                 if play_again == "y":
-                    # Let player choose symbol again
+                    # Let player choose symbol and difficulty again
                     player_symbol = select_symbol()
                     computer_symbol = "O" if player_symbol == "X" else "X"
+                    difficulty = select_difficulty()
                     reset_game()
                     continue
                 else:
