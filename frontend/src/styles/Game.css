@@ -170,4 +170,37 @@
 
 .reset-button:hover {
   background-color: #3182ce;
+}
+
+.difficulty-selector {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.difficulty-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.difficulty-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border: 2px solid #4a90e2;
+  border-radius: 5px;
+  background-color: white;
+  color: #4a90e2;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.difficulty-button:hover {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.difficulty-button.active {
+  background-color: #4a90e2;
+  color: white;
 } 

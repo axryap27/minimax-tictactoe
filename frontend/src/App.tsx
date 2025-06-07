@@ -3,6 +3,7 @@ import "./styles/Game.css";
 
 type Player = "X" | "O";
 type GameMode = "pvp" | "pvc";
+type Difficulty = "easy" | "medium" | "hard";
 
 function App() {
   const [board, setBoard] = useState<Array<Player | null>>(Array(9).fill(null));
@@ -13,6 +14,7 @@ function App() {
   const [computerSymbol, setComputerSymbol] = useState<Player>("O");
   const [showSymbolSelector, setShowSymbolSelector] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>("medium");
 
   const calculateWinner = (squares: Array<Player | null>): Player | null => {
     const lines = [
@@ -106,32 +108,65 @@ function App() {
   };
 
   const getComputerMove = (squares: Array<Player | null>): number => {
-    // Try to win
-    const winningMove = findWinningMove(squares, computerSymbol);
-    if (winningMove !== null) return winningMove;
+    switch (difficulty) {
+      case "easy":
+        // Completely random moves
+        const availableMoves = squares
+          .map((square, index) => (square === null ? index : null))
+          .filter((index): index is number => index !== null);
+        const randomIndex = Math.floor(Math.random() * availableMoves.length);
+        return availableMoves[randomIndex];
 
-    // Block player's winning move
-    const blockingMove = findWinningMove(squares, playerSymbol);
-    if (blockingMove !== null) return blockingMove;
+      case "medium":
+        // 70% chance to use simple logic, 30% random
+        if (Math.random() < 0.7) {
+          // Try to win
+          const winningMove = findWinningMove(squares, computerSymbol);
+          if (winningMove !== null) return winningMove;
 
-    // Use minimax to find the best move
-    let bestScore = -Infinity;
-    let bestMove = -1;
-    const availableMoves = squares
-      .map((square, index) => (square === null ? index : null))
-      .filter((index): index is number => index !== null);
+          // Block player's winning move
+          const blockingMove = findWinningMove(squares, playerSymbol);
+          if (blockingMove !== null) return blockingMove;
 
-    for (const move of availableMoves) {
-      squares[move] = computerSymbol;
-      const score = minimax(squares, 0, false, -Infinity, Infinity);
-      squares[move] = null;
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
-      }
+          // Take center if available
+          if (squares[4] === null) return 4;
+        }
+        // Fall through to random move
+        const mediumMoves = squares
+          .map((square, index) => (square === null ? index : null))
+          .filter((index): index is number => index !== null);
+        const mediumRandomIndex = Math.floor(
+          Math.random() * mediumMoves.length
+        );
+        return mediumMoves[mediumRandomIndex];
+
+      case "hard":
+        // Try to win
+        const hardWinningMove = findWinningMove(squares, computerSymbol);
+        if (hardWinningMove !== null) return hardWinningMove;
+
+        // Block player's winning move
+        const hardBlockingMove = findWinningMove(squares, playerSymbol);
+        if (hardBlockingMove !== null) return hardBlockingMove;
+
+        // Use minimax to find the best move
+        let bestScore = -Infinity;
+        let bestMove = -1;
+        const hardMoves = squares
+          .map((square, index) => (square === null ? index : null))
+          .filter((index): index is number => index !== null);
+
+        for (const move of hardMoves) {
+          squares[move] = computerSymbol;
+          const score = minimax(squares, 0, false, -Infinity, Infinity);
+          squares[move] = null;
+          if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+          }
+        }
+        return bestMove;
     }
-
-    return bestMove;
   };
 
   const makeComputerMove = () => {
@@ -222,6 +257,10 @@ function App() {
     }
   }, [gameMode, playerSymbol, currentPlayer, winner, gameStarted]);
 
+  const handleDifficultySelect = (selectedDifficulty: Difficulty) => {
+    setDifficulty(selectedDifficulty);
+  };
+
   const renderCell = (index: number) => (
     <button
       className={`cell ${board[index]?.toLowerCase() || ""}`}
@@ -264,6 +303,38 @@ function App() {
             </button>
           </div>
         </div>
+
+        {gameMode === "pvc" && (
+          <div className="difficulty-selector">
+            <h2>Select Difficulty</h2>
+            <div className="difficulty-buttons">
+              <button
+                className={`difficulty-button ${
+                  difficulty === "easy" ? "active" : ""
+                }`}
+                onClick={() => handleDifficultySelect("easy")}
+              >
+                Easy
+              </button>
+              <button
+                className={`difficulty-button ${
+                  difficulty === "medium" ? "active" : ""
+                }`}
+                onClick={() => handleDifficultySelect("medium")}
+              >
+                Medium
+              </button>
+              <button
+                className={`difficulty-button ${
+                  difficulty === "hard" ? "active" : ""
+                }`}
+                onClick={() => handleDifficultySelect("hard")}
+              >
+                Hard
+              </button>
+            </div>
+          </div>
+        )}
 
         {showSymbolSelector && (
           <div className="symbol-selector">
